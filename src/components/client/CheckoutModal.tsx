@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
 import { X, MessageCircle, Loader2, MapPin, User, Phone } from "lucide-react";
-// Import fungsi addOrder dari service logic
-import { addOrder } from "@/lib/orders"; 
+// Import fungsi addOrder dan type Order dari service logic
+import { addOrder, Order } from "@/lib/orders"; 
 import { Product } from "@/lib/products"; 
 
 interface CheckoutModalProps {
@@ -30,11 +30,11 @@ export default function CheckoutModal({ isOpen, onClose, product }: CheckoutModa
 
     try {
       // 1. Panggil fungsi addOrder (Ini akan menjalankan handleCustomerUpsert di backend)
-      const orderPayload = {
+      const orderPayload: Omit<Order, "id" | "created_at"> = {
         customer_name: formData.name,
         whatsapp_number: formData.phone,
         total_amount: totalPrice,
-        status: 'Proses',
+        status: "Proses", // <-- PERBAIKAN: TypeScript sekarang tahu ini literal type
         items_summary: `${formData.quantity}x ${product.name}`,
       };
       
