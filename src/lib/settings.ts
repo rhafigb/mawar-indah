@@ -1,37 +1,77 @@
 import { getSupabaseClient } from './supabase';
-// ... interface StoreSettings tetap sama
+
+// INTERFACE YANG LEBIH SESUAI DENGAN KOMPONEN
+export interface StoreSettings {
+  store_name: string;
+  store_address: string;
+  phone_number: string;
+  email: string;
+  whatsapp_number: string;
+  instagram_url?: string;
+  tiktok_url?: string;
+  bank_account_number?: string;
+  bank_account_name?: string;
+}
 
 const CONFIG_ID = 1;
 
-// READ
-export async function getSettings() {
-  const supabase = getSupabaseClient(); // Panggil klien disini
-  const { data, error } = await supabase.from('store_settings').select('*').eq('id', CONFIG_ID).single();
+export async function getSettings(): Promise<StoreSettings> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('store_settings')
+    .select('*')
+    .eq('id', CONFIG_ID)
+    .single();
 
   if (error && error.code !== 'PGRST116') throw error; 
   
+  // Return default settings jika tidak ada data
   if (!data) {
-    return { 
-      id: CONFIG_ID, store_name: 'Mawar Indah Default', store_description: '', whatsapp_number: 'N/A', 
-      business_email: 'info@example.com', address_detail: 'Belum diatur', google_maps_embed_url: '', 
-    } as any;
+    return {
+      store_name: 'Mawar Indah Jewelry',
+      store_address: 'Alamat toko belum diatur',
+      phone_number: '',
+      email: 'info@mawarindah.com',
+      whatsapp_number: '',
+      instagram_url: '',
+      tiktok_url: '',
+      bank_account_number: '',
+      bank_account_name: ''
+    };
   }
 
+  // Mapping data dari database ke interface
   return {
-    ...data,
-    google_maps_embed_url: String(data.google_maps_embed_url || ''),
-    address_detail: String(data.address_detail || 'Belum diatur'),
-    store_description: String(data.store_description || ''),
-  } as any;
+    store_name: data.store_name || 'Mawar Indah Jewelry',
+    store_address: data.store_address || data.address_detail || 'Alamat toko belum diatur',
+    phone_number: data.phone_number || '',
+    email: data.email || data.business_email || 'info@mawarindah.com',
+    whatsapp_number: data.whatsapp_number || '',
+    instagram_url: data.instagram_url || '',
+    tiktok_url: data.tiktok_url || '',
+    bank_account_number: data.bank_account_number || '',
+    bank_account_name: data.bank_account_name || ''
+  };
 }
 
-// UPDATE
-export async function updateSettings(updates: any) {
-  const supabase = getSupabaseClient(); // Panggil klien disini
-  const { data, error } = await supabase.from('store_settings').update(updates).eq('id', CONFIG_ID).select().single();
+export async function updateSettings(updates: Partial<StoreSettings>): Promise<StoreSettings> {
+  const supabase = getSupabaseClient();
+  
+  const updateData = {
+    ...updates,
+    id: CONFIG_ID,
+    updated_at: new Date().toISOString()
+  };
+
+  const { data, error } = await supabase
+    .from('store_settings')
+    .upsert(updateData)
+    .select()
+    .single();
 
   if (error) {
     throw new Error(error.message || "Gagal mengupdate data di Supabase.");
   }
-  return data;
+  
+  return data as StoreSettings;
 }
