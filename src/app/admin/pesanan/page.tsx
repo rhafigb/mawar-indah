@@ -5,6 +5,9 @@ import { getOrders, addOrder, deleteOrder, updateOrderStatus, Order } from "@/li
 import OrderModal from "@/components/admin/OrderModal";
 import Toast from "@/components/ui/Toast";
 
+// Definisikan type untuk status yang valid
+type OrderStatus = "Proses" | "Selesai" | "Batal";
+
 export default function PesananPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,7 +49,8 @@ export default function PesananPage() {
     }
   };
 
-  const handleStatusChange = async (id: number, newStatus: string) => {
+  // PERBAIKAN: Gunakan type OrderStatus yang spesifik
+  const handleStatusChange = async (id: number, newStatus: OrderStatus) => {
     await updateOrderStatus(id, newStatus);
     // Optimistic update
     setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus } : o));
@@ -117,7 +121,7 @@ export default function PesananPage() {
                         {/* Dropdown Status Cepat */}
                         <select 
                             value={order.status}
-                            onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                            onChange={(e) => handleStatusChange(order.id, e.target.value as OrderStatus)}
                             className="bg-transparent border-none text-xs font-medium focus:ring-0 cursor-pointer hover:underline"
                         >
                             <option value="Proses">Proses</option>
