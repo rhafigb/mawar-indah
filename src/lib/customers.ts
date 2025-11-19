@@ -1,32 +1,17 @@
-import { supabase } from './supabase';
+import { getSupabaseClient } from './supabase';
+// ... interface Customer tetap sama
 
-export interface Customer {
-  id: number;
-  created_at: string;
-  name: string;
-  email: string | null;
-  phone: string;
-  total_orders: number;
-  total_spent: number;
-}
-
-// READ: Ambil semua pelanggan
+// READ
 export async function getCustomers() {
-  const { data, error } = await supabase
-    .from('customers')
-    .select('*')
-    .order('total_spent', { ascending: false }); // Urutkan dari yang paling banyak belanja
-  
+  const supabase = getSupabaseClient(); // Panggil klien disini
+  const { data, error } = await supabase.from('customers').select('*').order('total_spent', { ascending: false }); 
   if (error) throw error;
-  return data as Customer[];
+  return data as any[];
 }
 
-// DELETE: Hapus pelanggan
+// DELETE
 export async function deleteCustomer(id: number) {
-  const { error } = await supabase
-    .from('customers')
-    .delete()
-    .eq('id', id);
-
+  const supabase = getSupabaseClient(); // Panggil klien disini
+  const { error } = await supabase.from('customers').delete().eq('id', id);
   if (error) throw error;
 }
