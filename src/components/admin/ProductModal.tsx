@@ -2,7 +2,8 @@
 import { useState, useEffect, useRef } from "react";
 import { X, Save, Loader2, UploadCloud } from "lucide-react";
 import { Product } from "@/lib/products";
-import { supabase } from "@/lib/supabase";
+// FIX: Import getSupabaseClient, bukan { supabase }
+import { getSupabaseClient } from "@/lib/supabase"; 
 import Image from "next/image";
 
 interface ProductModalProps {
@@ -13,7 +14,6 @@ interface ProductModalProps {
 }
 
 export default function ProductModal({ isOpen, onClose, onSave, initialData }: ProductModalProps) {
-  // State fleksibel
   const [formData, setFormData] = useState<{
     name: string;
     price: number | "";
@@ -38,7 +38,6 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
-        // Mode Edit
         setFormData({
           name: initialData.name,
           price: initialData.price,
@@ -49,7 +48,6 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
         setExistingImageUrl(initialData.image_url);
         setImagePreview(initialData.image_url);
       } else {
-        // Mode Tambah: Reset Semua
         setFormData({ name: "", price: "", stock: "", category: "", description: "" });
         setExistingImageUrl("");
         setImagePreview("");
@@ -70,6 +68,9 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
   };
 
   const uploadImage = async (file: File): Promise<string> => {
+    // FIX: Panggil klien Supabase di sini
+    const supabase = getSupabaseClient(); 
+    
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `${fileName}`;
@@ -153,7 +154,7 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
             </div>
           </div>
 
-          {/* Nama Produk */}
+          {/* Inputs */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Nama Produk</label>
             <input required type="text" className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/20 outline-none"
@@ -162,7 +163,6 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
             />
           </div>
 
-          {/* Harga & Stok */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Harga (Rp)</label>
@@ -180,25 +180,24 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
             </div>
           </div>
 
-          {/* PERBAIKAN: Kategori sekarang Input Text Bebas */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
             <input 
               required 
               type="text" 
               placeholder="Contoh: Mawar, Indoor, Pupuk..."
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/20 outline-none"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-green/20 outline-none"
               value={formData.category}
               onChange={(e) => setFormData({...formData, category: e.target.value})}
             />
           </div>
-
-          {/* Deskripsi (Opsional) */}
+          
+          {/* Deskripsi */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
             <textarea 
               rows={3}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/20 outline-none"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-green/20 outline-none"
               value={formData.description}
               onChange={(e) => setFormData({...formData, description: e.target.value})}
             />
@@ -216,3 +215,4 @@ export default function ProductModal({ isOpen, onClose, onSave, initialData }: P
     </div>
   );
 }
+
