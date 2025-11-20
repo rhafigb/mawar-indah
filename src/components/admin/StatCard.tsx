@@ -9,7 +9,14 @@ interface StatCardProps {
   color: "green" | "blue" | "orange";
 }
 
-export default function StatCard({ title, value, change, isPositive, icon: Icon, color }: StatCardProps) {
+export default function StatCard({
+  title,
+  value,
+  change,
+  isPositive,
+  icon: Icon,
+  color,
+}: StatCardProps) {
   const colorStyles = {
     green: "bg-green-100 text-green-600",
     blue: "bg-blue-100 text-blue-600",
@@ -28,10 +35,16 @@ export default function StatCard({ title, value, change, isPositive, icon: Icon,
         </div>
       </div>
       <div className="mt-4 flex items-center text-sm">
-        <span className={isPositive ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+        <span
+          className={
+            isPositive
+              ? "text-green-600 font-medium"
+              : "text-red-600 font-medium"
+          }
+        >
           {change}
         </span>
-        <span className="text-gray-400 ml-2">dari bulan lalu</span>
+        <span className="text-gray-400 ml-2"></span>
       </div>
     </div>
   );
