@@ -1,28 +1,52 @@
-import { getSupabaseClient } from './supabase';
+import { getSupabaseClient } from "./supabase";
 
-// --- KUNCI FIX: DEFINISI INTERFACE CUSTOMER DI SINI ---
 export interface Customer {
   id: number;
   created_at: string;
   name: string;
-  email: string | null;
-  phone: string;
-  total_orders: number;
-  total_spent: number;
+  message: string;
+  product_id?: number | null;
+  product_name?: string | null;
 }
-// ---------------------------------------------------
+
+// INSERT
+export async function addCustomer(
+  name: string,
+  message: string,
+  productId: number | null,
+  productName: string | null
+) {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase.from("customers").insert({
+    name,
+    message,
+    product_id: productId,
+    product_name: productName,
+  });
+
+  if (error) {
+    console.error("Supabase error:", error); // <– LIHAT ERROR ASLINYA
+    throw error;
+  }
+
+  return data;
+}
 
 // READ
 export async function getCustomers() {
-  const supabase = getSupabaseClient(); // Panggil klien disini
-  const { data, error } = await supabase.from('customers').select('*').order('total_spent', { ascending: false }); 
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from("customers")
+    .select("id, name, message, product_name, created_at")
+    .order("created_at", { ascending: false });
+
   if (error) throw error;
-  return data as Customer[]; // Menggunakan interface Customer yang baru diexport
+  return data;
 }
 
 // DELETE
 export async function deleteCustomer(id: number) {
-  const supabase = getSupabaseClient(); // Panggil klien disini
-  const { error } = await supabase.from('customers').delete().eq('id', id);
+  const supabase = getSupabaseClient();
+  const { error } = await supabase.from("customers").delete().eq("id", id);
   if (error) throw error;
 }
