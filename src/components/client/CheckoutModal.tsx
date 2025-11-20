@@ -1,138 +1,102 @@
 "use client";
+
 import { useState } from "react";
-import { X, MessageCircle, Loader2, MapPin, User, Phone } from "lucide-react";
-// Import fungsi addOrder dan type Order dari service logic
-import { addOrder, Order } from "@/lib/orders"; 
-import { Product } from "@/lib/products"; 
+import { X, MessageCircle, Loader2 } from "lucide-react";
+import { addCustomer } from "@/lib/customers";
 
 interface CheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
-  product: Product | null;
+  product: any | null; // kalau tidak dipakai, bisa set "any"
 }
 
-export default function CheckoutModal({ isOpen, onClose, product }: CheckoutModalProps) {
+export default function CheckoutModal({
+  isOpen,
+  onClose,
+  product,
+}: CheckoutModalProps) {
   const [formData, setFormData] = useState({
     name: "",
-    phone: "",
-    address: "",
-    quantity: 1
+    message: "",
   });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (!isOpen || !product) return null;
+  if (!isOpen) return null;
 
-  const totalPrice = product.price * formData.quantity;
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      // 1. Panggil fungsi addOrder (Ini akan menjalankan handleCustomerUpsert di backend)
-      const orderPayload: Omit<Order, "id" | "created_at"> = {
-        customer_name: formData.name,
-        whatsapp_number: formData.phone,
-        total_amount: totalPrice,
-        status: "Proses", // <-- PERBAIKAN: TypeScript sekarang tahu ini literal type
-        items_summary: `${formData.quantity}x ${product.name}`,
-      };
-      
-      await addOrder(orderPayload); 
+      // 1️⃣ SIMPAN DATA DULU (cepat, tidak memicu block popup)
+      addCustomer(
+        formData.name,
+        formData.message,
+        product?.id ?? null,
+        product?.name ?? null
+      )
+        .then(() => console.log("Data pelanggan tersimpan"))
+        .catch((err) => console.error(err));
 
-      // 2. Redirect ke WhatsApp
-      const message = `Halo Mawar Indah, saya ingin memesan:
----------------------------
-*Produk:* ${product.name}
-*Jumlah:* ${formData.quantity}
-*Total:* Rp ${totalPrice.toLocaleString('id-ID')}
-*Alamat:* ${formData.address}
----------------------------
-Mohon diproses ya! (Data sudah tercatat di Admin)`;
-      
-      const waUrl = `https://wa.me/6281312132075?text=${encodeURIComponent(message)}`;
-      window.open(waUrl, '_blank');
+      // 2️⃣ BARU BUKA WHATSAPP (tanpa await agar tidak diblokir)
+      const waUrl = `https://wa.me/6281312132075?text=${encodeURIComponent(
+        `Halo, saya ${formData.name}\n\nPesan:\n${formData.message}`
+      )}`;
+
+      window.open(waUrl, "_blank");
 
       onClose();
-      
     } catch (error) {
-      console.error("Error checkout:", error);
-      alert("Gagal memproses pesanan. Silakan coba lagi.");
+      alert("Gagal mengirim data.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
-        
-        <div className="bg-brand-green p-4 flex justify-between items-center text-white">
-          <h3 className="font-bold text-lg">Formulir Pemesanan</h3>
-          <button onClick={onClose} className="hover:bg-white/20 p-1 rounded-full transition">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+      <div className="bg-white w-full max-w-md rounded-2xl shadow-xl">
+        <div className="bg-brand-green p-4 text-white flex justify-between">
+          <h3 className="font-bold text-lg">Formulir</h3>
+          <button onClick={onClose}>
             <X size={20} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            
-            {/* Info Produk & Jumlah */}
-            <div className="bg-gray-50 p-3 rounded-lg flex justify-between items-center mb-4 border border-gray-200">
-                <div>
-                    <p className="text-sm font-bold text-gray-800 line-clamp-1">{product.name}</p>
-                    <p className="text-xs text-brand-green">Rp {product.price.toLocaleString("id-ID")} / pcs</p>
-                </div>
-                <div className="text-right flex items-center gap-2">
-                    <label className="text-sm text-gray-600">Jumlah:</label>
-                    <input 
-                      type="number" 
-                      min="1" 
-                      value={formData.quantity}
-                      onChange={(e) => setFormData({...formData, quantity: parseInt(e.target.value) || 1})}
-                      className="w-16 text-center border border-gray-300 rounded-lg p-1 text-sm font-bold focus:border-brand-green"
-                    />
-                </div>
-            </div>
+          <input
+            required
+            type="text"
+            placeholder="Nama Lengkap"
+            className="w-full border p-2 rounded-lg"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
 
-            {/* Input Data Diri */}
-            <div className="space-y-3">
-                <div className="relative">
-                    <input 
-                      required type="text" placeholder="Nama Lengkap"
-                      className="w-full pl-4 pr-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-brand-green/20 outline-none"
-                      value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
-                </div>
-                <div className="relative">
-                    <input 
-                      required type="tel" placeholder="Nomor WhatsApp"
-                      className="w-full pl-4 pr-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-brand-green/20 outline-none"
-                      value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
-                </div>
-                <div className="relative">
-                    <textarea 
-                      required placeholder="Alamat Pengiriman Lengkap" rows={2}
-                      className="w-full pl-4 pr-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-brand-green/20 outline-none"
-                      value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} />
-                </div>
-            </div>
+          <textarea
+            required
+            rows={3}
+            placeholder="Pesan atau pertanyaan anda..."
+            className="w-full border p-2 rounded-lg"
+            value={formData.message}
+            onChange={(e) =>
+              setFormData({ ...formData, message: e.target.value })
+            }
+          />
 
-            {/* Total & Button */}
-            <div className="pt-4 border-t border-gray-100">
-                <div className="flex justify-between items-center mb-4">
-                    <span className="text-gray-600 font-medium">Total Bayar:</span>
-                    <span className="text-2xl font-bold text-brand-green">Rp {totalPrice.toLocaleString("id-ID")}</span>
-                </div>
-
-                <button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  className="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition flex items-center justify-center gap-2 shadow-lg shadow-green-200 disabled:opacity-50"
-                >
-                  {isSubmitting ? <Loader2 className="animate-spin" /> : <MessageCircle size={20} />}
-                  Lanjut ke WhatsApp
-                </button>
-                <p className="text-[10px] text-gray-400 text-center mt-2">Data pesanan akan otomatis tercatat di sistem kami.</p>
-            </div>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-green-600 text-white py-3 rounded-lg flex justify-center items-center gap-2"
+          >
+            {isSubmitting ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <MessageCircle />
+            )}
+            Kirim via WhatsApp
+          </button>
         </form>
       </div>
     </div>
