@@ -1,15 +1,22 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingBag, Users, Settings, LogOut, Flower2 } from "lucide-react";
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingBag,
+  Users,
+  Settings,
+  LogOut,
+  Flower2,
+} from "lucide-react";
 
 export default function AdminSidebar() {
   const pathname = usePathname();
 
   const menuItems = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { name: "Produk", href: "/admin/produk", icon: Package },
-    { name: "Pesanan", href: "/admin/pesanan", icon: ShoppingBag },
+    { name: "Manajemen Produk", href: "/admin/produk", icon: Package },
     { name: "Pelanggan", href: "/admin/pelanggan", icon: Users },
     { name: "Pengaturan", href: "/admin/settings", icon: Settings },
   ];
@@ -47,8 +54,8 @@ export default function AdminSidebar() {
 
       {/* Logout Button - Direct to Home */}
       <div className="p-4 border-t border-gray-100">
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-red-600 rounded-xl hover:bg-red-50 transition-all"
         >
           <LogOut size={20} />
