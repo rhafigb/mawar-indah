@@ -15,6 +15,6 @@ export const products: Product[] = [
 
 export const tips = [
   { id: 1, title: "Cara Bertanya ke Asisten AI", desc: 'Gunakan kalimat yang jelas dan langsung. Contoh : "Bagaimana cara merawat Bunga Aglonema?"' },
-  { id: 2, title: "Tips Dapat Jawaban Akurat", desc: "Sebutkan jenis tanaman jika diketahui, jelaskan komdisi sekitar seperti cuaca dan lokasi." },
+  { id: 2, title: "Tips Dapat Jawaban Akurat", desc: "Sebutkan jenis tanaman jika diketahui, jelaskan kondisi sekitar seperti cuaca dan lokasi." },
   { id: 3, title: "Jelajahi & Eksperimen", desc: "Lihat demo percakapan untuk inspirasi pertanyaan, ajukan berbagai pertanyaan seputar tanaman." },
 ];
