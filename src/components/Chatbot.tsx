@@ -58,7 +58,7 @@ export default function Chatbot() {
       >
         <MessageCircle size={28} />
         <span className="absolute right-full mr-4 bg-gray-900 text-white text-xs px-3 py-1.5 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
-            Tanya Dokter Tanaman 🌿
+            Tanya AI Mawar Indah 🌿
         </span>
       </button>
 
